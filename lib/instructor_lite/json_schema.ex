@@ -265,7 +265,7 @@ defmodule InstructorLite.JSONSchema do
 
   defp for_type(mod) do
     if function_exported?(mod, :to_json_schema, 0) do
-      mod.to_json_schema()
+      mod.json_schema()
     else
       raise "Unsupported type: #{inspect(mod)}, please implement `to_json_schema/0` via `use InstructorLite.EctoType`"
     end
