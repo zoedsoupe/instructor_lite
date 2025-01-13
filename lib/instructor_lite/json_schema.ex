@@ -263,11 +263,26 @@ defmodule InstructorLite.JSONSchema do
     }
   end
 
+  defp for_type({:parameterized, {PolymorphicEmbed, params}}) do
+    types_metadata = Map.fetch!(params, :types_metadata)
+
+    one_of_schemas =
+      Enum.map(types_metadata, fn %{module: mod} ->
+        if function_exported?(mod, :json_schema, 0) do
+          mod.json_schema()
+        else
+          raise "Module #{inspect(mod)} must implement json_schema/0"
+        end
+      end)
+
+    %{"oneOf" => one_of_schemas}
+  end
+
   defp for_type(mod) do
-    if function_exported?(mod, :to_json_schema, 0) do
+    if function_exported?(mod, :json_schema, 0) do
       mod.json_schema()
     else
-      raise "Unsupported type: #{inspect(mod)}, please implement `to_json_schema/0` via `use InstructorLite.EctoType`"
+      raise "Unsupported type: #{inspect(mod)}, please implement `json_schema/0` via `use InstructorLite.EctoType`"
     end
   end
 end
